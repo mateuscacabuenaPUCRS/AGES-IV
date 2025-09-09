@@ -1,0 +1,22 @@
+TECNOLOGIAS
+react shadcn e sass
+
+convencer cliente a usar nestjs
+
+GitLab (ter o Código atualizado no GitHub ou localmente para evitar ser prejudicado por rollback) (estar pronto para ir pro GitHub na primeira vez que algo der errado)
+
+PostgreSQL
+
+DINÂMICAS
+Dojo e recomendar cursos o mais rápido possível (talvez sugerir uma atividade prática)
+
+Daily terça e quinta, escrito no domingo
+
+code freeze: 36h antes da entrega
+
+TESTES
+front: testes unitários e e2e
+back: a definer
+
+FEATURE DE PAGAMENTO
+analisar maneiras de ser feito (pois não é muito complexo e agregaria valor)
