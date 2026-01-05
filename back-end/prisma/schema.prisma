@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  role      UserRole
+  imageUrl  String?   @map("image_url")
+  fullName  String    @map("full_name")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  donor    Donor?
+  admin    Admin?
+  campaign Campaign[]
+
+  passwordResetToken PasswordResetToken[]
+
+  @@map("users")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("password_reset_tokens")
+}
+
+model Donor {
+  id        String   @id @default(cuid())
+  birthDate DateTime @map("birth_date") @db.Date
+  gender    Gender
+  phone     String
+  cpf       String   @unique
+
+  donation Donation[]
+  address  Address[]
+
+  user User @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("donors")
+}
+
+model Admin {
+  id   String  @id @default(cuid())
+  root Boolean @default(false)
+
+  user User @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+model Address {
+  id         String  @id @default(cuid())
+  state      String  @db.Char(2)
+  city       String
+  district   String
+  street     String
+  number     String
+  postalCode String  @map("postal_code")
+  complement String?
+  donorId    String  @map("donor_id")
+
+  donor Donor @relation(fields: [donorId], references: [id])
+
+  @@map("addresses")
+}
+
+model Campaign {
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  targetAmount  Decimal        @map("target_amount") @db.Decimal(12, 2)
+  currentAmount Decimal        @default(0) @map("current_amount") @db.Decimal(12, 2)
+  startDate     DateTime?      @map("start_date") @db.Date
+  endDate       DateTime?      @map("end_date") @db.Date
+  imageUrl      String?        @map("image_url")
+  status        CampaignStatus @default(PENDING)
+  createdBy     String         @map("created_by")
+  donation      Donation[]
+  isRoot        Boolean        @default(false) @map("is_root")
+  user User @relation(fields: [createdBy], references: [id])
+
+  @@map("campaigns")
+}
+
+model Donation {
+  id          String       @id @default(cuid())
+  amount      Decimal      @db.Decimal(12, 2)
+  periodicity Periodicity?
+  donorId     String?      @map("donor_id")
+  campaignId  String?      @map("campaign_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  payment Payment[]
+
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  donor    Donor?    @relation(fields: [donorId], references: [id])
+
+  @@map("donations")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  paymentMethod PaymentMethod @map("payment_method")
+  status        PaymentStatus @default(PENDING)
+  amount        Decimal?      @db.Decimal(12, 2)
+  paidAt        DateTime?     @map("paid_at")
+  donationId    String        @map("donation_id")
+
+  donation Donation @relation(fields: [donationId], references: [id])
+
+  @@map("payments")
+}
+
+model News {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  date        DateTime? @db.Date
+  location    String?
+  url         String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("news")
+}
+
+model Events {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  dateStart   DateTime @map("date_start")
+  dateEnd     DateTime @map("date_end")
+  location    String
+  url         String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("events")
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("newsletter")
+}
+
+model HowToHelp {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("how_to_help")
+}
+
+enum UserRole {
+  ADMIN
+  DONOR
+}
+
+enum CampaignStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  FINISHED
+  CANCELED
+}
+
+enum PaymentMethod {
+  PIX
+  BANK_SLIP
+  CREDIT_CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CONFIRMED
+  FAILED
+  REFUNDED
+  CANCELED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Periodicity {
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUAL
+  YEARLY
+  CANCELED
+}

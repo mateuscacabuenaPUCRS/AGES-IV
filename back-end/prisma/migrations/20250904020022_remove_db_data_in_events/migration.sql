@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "events" ALTER COLUMN "date_end" SET DATA TYPE TIMESTAMP(3),
+ALTER COLUMN "date_start" SET DATA TYPE TIMESTAMP(3);
